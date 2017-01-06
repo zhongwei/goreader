@@ -9,6 +9,24 @@
 			"revisionTime": "2016-10-26T20:31:22Z"
 		},
 		{
+			"checksumSHA1": "lMEkq8UmtqRGtYkiYL6suQ28xy8=",
+			"path": "github.com/garyburd/redigo",
+			"revision": "8c052d82153967815d9093a7e9d3e7fd2e554861",
+			"revisionTime": "2017-01-01T00:10:20Z"
+		},
+		{
+			"checksumSHA1": "2UmMbNHc8FBr98mJFN1k8ISOIHk=",
+			"path": "github.com/garyburd/redigo/internal",
+			"revision": "8c052d82153967815d9093a7e9d3e7fd2e554861",
+			"revisionTime": "2017-01-01T00:10:20Z"
+		},
+		{
+			"checksumSHA1": "pofHSvosTrIPzQyddaLX5wy0ehI=",
+			"path": "github.com/garyburd/redigo/redis",
+			"revision": "8c052d82153967815d9093a7e9d3e7fd2e554861",
+			"revisionTime": "2017-01-01T00:10:20Z"
+		},
+		{
 			"checksumSHA1": "Ok3Csn6Voou7pQT6Dv2mkwpqFtw=",
 			"path": "github.com/hashicorp/hcl",
 			"revision": "80e628d796135357b3d2e33a985c666b9f35eee1",

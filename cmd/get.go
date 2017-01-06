@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/zhongwei/goreader/netdata"
+	"github.com/zhongwei/goreader/store"
 )
 
 var (
@@ -24,6 +25,8 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
         siteContent := netdata.Get(url)
 		fmt.Println("get called url " + url)
+        store.Save(url, siteContent)
+		fmt.Println("I'm here")
         fmt.Println(siteContent)
 	},
 }
