@@ -81,6 +81,12 @@
 			"revisionTime": "2016-12-15T22:58:39Z"
 		},
 		{
+			"checksumSHA1": "UYDU8nJJ/RXSTrR+dgQodj78uQI=",
+			"path": "github.com/inconshreveable/mousetrap",
+			"revision": "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75",
+			"revisionTime": "2014-10-17T20:07:13Z"
+		},
+		{
 			"checksumSHA1": "506eXGmFfB7mgzbMcsdT/UAXJgI=",
 			"path": "github.com/magiconair/properties",
 			"revision": "9c47895dc1ce54302908ab8a43385d1f5df2c11c",
