@@ -1,28 +1,43 @@
 package store
 
 import (
-    "log"
+	"crypto/md5"
+	"encoding/hex"
+	"log"
 
-    "github.com/garyburd/redigo/redis"
-    "github.com/spf13/viper"
+	"github.com/garyburd/redigo/redis"
+	"github.com/spf13/viper"
 )
 
 func Save(url, content string) {
-    viper.SetDefault("redis.server", "localhost")
-    viper.SetDefault("redis.port", "6379")
-    viper.SetDefault("redis.protocol", "tcp")
+	connection, _ := getConnection()
+	defer connection.Close()
+	connection.Do("SET", url, content)
+	connection.Do("SET", getMD5Str(url), url)
+}
 
-    err := viper.ReadInConfig()
-    server := viper.GetString("redis.server")
-    port := viper.GetString("redis.port")
-    protocol := viper.GetString("redis.protocol")
-    
-    log.Println("redis server: " + protocol + "://" + server + ":" + port)
+func getConnection() (connection redis.Conn, err error) {
+	viper.SetDefault("redis.server", "localhost")
+	viper.SetDefault("redis.port", "6379")
+	viper.SetDefault("redis.protocol", "tcp")
 
-    c, err := redis.Dial(protocol, server + ":" + port)
-    if err != nil {
-        panic(err)
-    }
-    defer c.Close()
-    c.Do("SET", url, content)
+	server := viper.GetString("redis.server")
+	port := viper.GetString("redis.port")
+	protocol := viper.GetString("redis.protocol")
+
+	connection, err = redis.Dial(protocol, server+":"+port)
+	if err != nil {
+		panic(err)
+	}
+
+	log.Println("redis server: " + protocol + "://" + server + ":" + port)
+
+	return
+}
+
+func getMD5Str(s string) string {
+	md5Ctx := md5.New()
+	md5Ctx.Write([]byte(s))
+	cipherStr := md5Ctx.Sum(nil)
+	return hex.EncodeToString(cipherStr)
 }
