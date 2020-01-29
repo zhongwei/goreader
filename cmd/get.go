@@ -5,8 +5,8 @@ import (
 	"reflect"
 
 	"github.com/spf13/cobra"
-	"github.com/zhongwei/goreader/netdata"
-	"github.com/zhongwei/goreader/store"
+	"goreader/netdata"
+	"goreader/store"
 )
 
 var (
@@ -29,7 +29,7 @@ var getCmd = &cobra.Command{
 }
 
 func init() {
-	RootCmd.AddCommand(getCmd)
+	rootCmd.AddCommand(getCmd)
 	getCmd.PersistentFlags().String("foo", "", "A help for foo")
 	getCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	getCmd.Flags().StringSliceVarP(&urls, "urls", "u", []string{}, "Get site url address.")

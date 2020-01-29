@@ -1,6 +1,6 @@
 package main
 
-import "github.com/zhongwei/goreader/cmd"
+import "goreader/cmd"
 
 func main() {
 	cmd.Execute()
