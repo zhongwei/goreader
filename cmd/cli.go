@@ -22,8 +22,9 @@ var cliCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("crawl page %s, start: %s, end: %s, urlSuffix: %s, savePath: %s\n", baseURL, paramStart, paramEnd, urlSuffix, path)
 		crawler.SetSavePath(path)
-		urls := crawler.GenURLs(baseURL, paramStart, paramEnd, urlSuffix)
-		crawler.ProcessURLs(urls)
+		// urls := crawler.GenURLs(baseURL, paramStart, paramEnd, urlSuffix)
+		// crawler.ProcessURLs(urls)
+		crawler.DownloadFiles(baseURL, paramStart, paramEnd, urlSuffix, path)
 	},
 }
 

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -130,4 +131,99 @@ func MockRequest(url string) (resp *http.Response, err error) {
 		panic(err)
 	}
 	return client.Do(reqest)
+}
+
+func GetDataFromJson(fileName, start, end string) (ids []string, err error) {
+	var (
+		content []byte
+	)
+
+	if content, err = ioutil.ReadFile(fileName); err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	if err = json.Unmarshal(content, &ids); err != nil {
+		fmt.Println(err)
+		return
+	}
+	min, _ := strconv.Atoi(start)
+	max, _ := strconv.Atoi(end)
+	return ids[min-1 : max-1], err
+}
+
+func GenURLsFromData(ids []string, prefix, suffix string) []string {
+	var (
+		urls []string
+	)
+
+	for _, id := range ids {
+		urls = append(urls, prefix+id+suffix)
+	}
+
+	return urls
+}
+
+func DownloadFiles(fileName, start, end, prefix, suffix string) {
+	ids, _ := GetDataFromJson(fileName, start, end)
+	for index, id := range ids {
+		savedFileName := id + suffix
+		url := prefix + savedFileName
+		res, err := MockRequest(url)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		defer res.Body.Close()
+		body, _ := ioutil.ReadAll(res.Body)
+		ioutil.WriteFile(savedFileName, body, 0644)
+		if index%5 == 0 {
+			fmt.Printf("file: %v, fileName: %s\n", index, savedFileName)
+		}
+	}
+}
+
+func GenDetailFileURLS(fileName, start, end, prefix, suffix string) {
+	ids, _ := GetDataFromJson(fileName, start, end)
+	urls := GenURLsFromData(ids, prefix, suffix)
+	txtURLs := []string{}
+	for _, url := range urls {
+		fmt.Printf("source: %s\n", url)
+		res, err := MockRequest(url)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		defer res.Body.Close()
+
+		if res.StatusCode != 200 {
+			log.Fatalf("status code error: %d %s", res.StatusCode, res.Status)
+		}
+
+		txtURL := ProcessDetailPage(res.Body)
+		fmt.Printf("url: %s\n", txtURL)
+
+		txtURLs = append(txtURLs, txtURL)
+	}
+}
+
+func ProcessDetailPage(r io.Reader) string {
+	doc, err := goquery.NewDocumentFromReader(r)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("linkName: %v\n", doc)
+	var url string
+	doc.Find(".album_read").Each(func(i int, s *goquery.Selection) {
+		fmt.Println("lllllllllllllllll")
+		aNode := s.Find("a")
+		linkName := ConvertToUTF8(aNode.Text())
+		fmt.Printf("linkName: %s\n", linkName)
+		if linkName == "TXT下载" {
+			url, _ = aNode.Attr("href")
+		}
+
+	})
+
+	return ConvertToUTF8(url)
 }
