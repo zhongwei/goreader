@@ -3,13 +3,13 @@ package crawler
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
 
 	"github.com/PuerkitoBio/goquery"
+	"gopkg.in/yaml.v2"
 )
 
 var (
@@ -17,12 +17,10 @@ var (
 )
 
 type Article struct {
-	page     int
 	title    string
-	url      string
+	id       string
 	author   string
 	summary  string
-	words    int32
 	category string
 }
 
@@ -46,17 +44,31 @@ func GenURLs(baseURL, start, end, suffix string) []string {
 }
 
 func ProcessURLs(urls []string) {
+	articles := []Article{}
 	for index, url := range urls {
-		response, _ := http.Get(url)
-		defer response.Body.Close()
-		ProcessArticle(response.Body)
-		body, _ := ioutil.ReadAll(response.Body)
-		bodystr := string(body)
-		SavePage(strconv.Itoa(index+1)+".htm", bodystr)
+		res, err := http.Get(url)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		defer res.Body.Close()
+
+		if res.StatusCode != 200 {
+			log.Fatalf("status code error: %d %s", res.StatusCode, res.Status)
+		}
+
+		thisPageArticles := ProcessArticle(res.Body)
+		articles = append(articles, thisPageArticles...)
+
+		if index%5 == 0 {
+			fmt.Printf("page: %v\n", index)
+		}
 	}
+	articleYaml, _ := yaml.Marshal(&articles)
+	SavePage(strconv.Itoa(len(urls))+".tmp", string(articleYaml))
 }
 
-func ProcessArticle(r io.Reader) {
+func ProcessArticle(r io.Reader) []Article {
 	articles := make([]Article, 0)
 
 	doc, err := goquery.NewDocumentFromReader(r)
@@ -67,16 +79,16 @@ func ProcessArticle(r io.Reader) {
 		aNode := s.Find("h4 i a")
 		title := aNode.Text()
 		url, _ := aNode.Attr("href")
+		id := url[9 : len(url)-5]
 		author := s.Find(".intro_line span").Text()
 		summary := s.Find(".update span").Text()
 		category := s.Find(".author").Text()
 
-		var article = Article{title: title, url: url, author: author, summary: summary, category: category}
+		var article = Article{title, id, author, summary, category}
 
 		articles = append(articles, article)
 	})
-	fmt.Printf("articles: %v \n", articles)
-	return
+	return articles
 
 }
 
