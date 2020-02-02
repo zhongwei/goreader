@@ -1,6 +1,7 @@
 package crawler
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -9,7 +10,7 @@ import (
 	"strconv"
 
 	"github.com/PuerkitoBio/goquery"
-	"gopkg.in/yaml.v2"
+	"github.com/axgle/mahonia"
 )
 
 var (
@@ -17,11 +18,11 @@ var (
 )
 
 type Article struct {
-	title    string
-	id       string
-	author   string
-	summary  string
-	category string
+	ID       string
+	Title    string
+	Author   string
+	Summary  string
+	Category string
 }
 
 func SetSavePath(path string) {
@@ -64,8 +65,10 @@ func ProcessURLs(urls []string) {
 			fmt.Printf("page: %v\n", index)
 		}
 	}
-	articleYaml, _ := yaml.Marshal(&articles)
-	SavePage(strconv.Itoa(len(urls))+".tmp", string(articleYaml))
+	articleBytes, _ := json.Marshal(&articles)
+	// fmt.Printf("yaml: %v\n", articles)
+	// fmt.Printf("json: %v\n", articleBytes)
+	SavePage(strconv.Itoa(len(urls))+".tmp", articleBytes)
 }
 
 func ProcessArticle(r io.Reader) []Article {
@@ -77,14 +80,14 @@ func ProcessArticle(r io.Reader) []Article {
 	}
 	doc.Find(".bookinfo").Each(func(i int, s *goquery.Selection) {
 		aNode := s.Find("h4 i a")
-		title := aNode.Text()
+		title := ConvertToUTF8(aNode.Text())
 		url, _ := aNode.Attr("href")
-		id := url[9 : len(url)-5]
-		author := s.Find(".intro_line span").Text()
-		summary := s.Find(".update span").Text()
-		category := s.Find(".author").Text()
+		id := ConvertToUTF8(ConvertToUTF8(url[9 : len(url)-5]))
+		author := ConvertToUTF8(s.Find(".intro_line span").Text())
+		summary := ConvertToUTF8(s.Find(".update span").Text())
+		category := ConvertToUTF8(s.Find(".author").Text())
 
-		var article = Article{title, id, author, summary, category}
+		var article = Article{id, title, author, summary, category}
 
 		articles = append(articles, article)
 	})
@@ -92,12 +95,25 @@ func ProcessArticle(r io.Reader) []Article {
 
 }
 
-func SavePage(name, content string) {
+func SavePage(name string, content []byte) {
 	f, err := os.Create(savePath + string(os.PathSeparator) + name)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	defer f.Close()
-	f.WriteString(content)
+	f.WriteString(string(content))
+}
+
+func ConvertToString(src string, srcCode string, tagCode string) string {
+	srcCoder := mahonia.NewDecoder(srcCode)
+	srcResult := srcCoder.ConvertString(src)
+	tagCoder := mahonia.NewDecoder(tagCode)
+	_, cdata, _ := tagCoder.Translate([]byte(srcResult), true)
+	result := string(cdata)
+	return result
+}
+
+func ConvertToUTF8(src string) string {
+	return ConvertToString(src, "gbk", "utf-8")
 }
