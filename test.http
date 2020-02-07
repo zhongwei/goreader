@@ -1,0 +1,7 @@
+GET http://localhost:8080/
+###
+POST http://localhost:8080/hello%20world
+###
+GET http://localhost:8080/hello%20world
+###
+GET http://localhost:8080/api/user/john
